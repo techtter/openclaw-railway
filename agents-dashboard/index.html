@@ -3,423 +3,1083 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OpenClaw Agents Dashboard - Live</title>
+  <title>Agents in a Mission</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
+    :root {
+      --bg-primary: #0a0e1a;
+      --bg-secondary: #111827;
+      --bg-card: #1a1f2e;
+      --bg-hover: #252b3d;
+      --border-color: #2d3748;
+      --text-primary: #f7fafc;
+      --text-secondary: #a0aec0;
+      --text-muted: #718096;
+      --accent-blue: #3b82f6;
+      --accent-purple: #8b5cf6;
+      --accent-green: #10b981;
+      --accent-yellow: #f59e0b;
+      --accent-red: #ef4444;
+      --accent-cyan: #06b6d4;
+      --gradient-primary: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+      --gradient-success: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+      --shadow-md: 0 4px 6px rgba(0,0,0,0.4);
+      --shadow-lg: 0 10px 40px rgba(0,0,0,0.5);
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+    }
+
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
-    
+
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-      background: #0f172a;
-      color: #e2e8f0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
       min-height: 100vh;
+      line-height: 1.6;
     }
-    
+
+    /* Header */
     .header {
-      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-      padding: 1.5rem 2rem;
-      border-bottom: 1px solid #334155;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-color);
+      padding: 1rem 2rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      flex-wrap: wrap;
-      gap: 1rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(10px);
     }
-    
-    .header h1 {
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--gradient-primary);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+    }
+
+    .logo h1 {
       font-size: 1.5rem;
-      background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+      font-weight: 700;
+      background: var(--gradient-primary);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
     }
-    
-    .status-badge {
-      display: inline-flex;
+
+    .logo p {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: -4px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .connection-status {
+      display: flex;
       align-items: center;
       gap: 0.5rem;
       padding: 0.5rem 1rem;
-      border-radius: 9999px;
+      background: var(--bg-card);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-color);
       font-size: 0.875rem;
-      font-weight: 500;
     }
-    
-    .status-online {
-      background: rgba(34, 197, 94, 0.2);
-      color: #4ade80;
-      border: 1px solid rgba(34, 197, 94, 0.3);
-    }
-    
-    .status-offline {
-      background: rgba(239, 68, 68, 0.2);
-      color: #f87171;
-      border: 1px solid rgba(239, 68, 68, 0.3);
-    }
-    
+
     .status-dot {
       width: 8px;
       height: 8px;
       border-radius: 50%;
       animation: pulse 2s infinite;
     }
-    
-    .status-online .status-dot {
-      background: #4ade80;
-    }
-    
-    .status-offline .status-dot {
-      background: #f87171;
-      animation: none;
-    }
-    
+
+    .status-online { background: var(--accent-green); }
+    .status-offline { background: var(--accent-red); animation: none; }
+
     @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
+      0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+      50% { opacity: 0.8; box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
     }
-    
+
+    .refresh-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      color: var(--text-secondary);
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+      transition: all 0.2s;
+    }
+
+    .refresh-btn:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+
+    .refresh-btn i {
+      transition: transform 0.5s;
+    }
+
+    .refresh-btn.spinning i {
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Tab Navigation */
+    .tab-nav {
+      display: flex;
+      gap: 0.5rem;
+      padding: 1rem 2rem;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .tab-btn {
+      padding: 0.75rem 1.5rem;
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 0.9375rem;
+      font-weight: 500;
+      cursor: pointer;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-primary);
+      background: var(--bg-hover);
+    }
+
+    .tab-btn.active {
+      color: var(--accent-blue);
+      background: rgba(59, 130, 246, 0.1);
+    }
+
+    .tab-btn.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1rem;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--accent-blue);
+    }
+
+    /* Container */
     .container {
-      max-width: 1400px;
+      max-width: 1600px;
       margin: 0 auto;
       padding: 2rem;
     }
-    
-    .grid {
+
+    /* Tab Content */
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Scrum Board */
+    .scrum-board {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      min-height: 600px;
+    }
+
+    .scrum-column {
+      background: var(--bg-secondary);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .scrum-header {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .scrum-header h3 {
+      font-size: 0.9375rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .scrum-header.todo h3 { color: var(--text-secondary); }
+    .scrum-header.inprogress h3 { color: var(--accent-yellow); }
+    .scrum-header.done h3 { color: var(--accent-green); }
+
+    .task-count {
+      background: var(--bg-card);
+      padding: 0.25rem 0.75rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .scrum-tasks {
+      padding: 1rem;
+      flex: 1;
+      overflow-y: auto;
+      max-height: 600px;
+    }
+
+    .task-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .task-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent-blue);
+      box-shadow: var(--shadow-md);
+    }
+
+    .task-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.75rem;
+    }
+
+    .task-id {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-family: monospace;
+    }
+
+    .task-priority {
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .priority-high { background: rgba(239, 68, 68, 0.2); color: var(--accent-red); }
+    .priority-medium { background: rgba(245, 158, 11, 0.2); color: var(--accent-yellow); }
+    .priority-low { background: rgba(16, 185, 129, 0.2); color: var(--accent-green); }
+
+    .task-title {
+      font-size: 0.9375rem;
+      font-weight: 500;
+      margin-bottom: 0.75rem;
+      line-height: 1.4;
+    }
+
+    .task-meta {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+    }
+
+    .task-agent {
+      display: flex;
+      align-items: center;
+      gap: 0.375rem;
+    }
+
+    .agent-avatar {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--gradient-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+    }
+
+    .task-time {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    /* Statistics Dashboard */
+    .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: 1.5rem;
       margin-bottom: 2rem;
     }
-    
-    .card {
-      background: #1e293b;
-      border-radius: 12px;
+
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
       padding: 1.5rem;
-      border: 1px solid #334155;
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-    
-    .card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-    }
-    
-    .card-header {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      margin-bottom: 1rem;
-      color: #94a3b8;
-      font-size: 0.875rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-    
-    .card-value {
-      font-size: 2.5rem;
-      font-weight: 700;
-      color: #f8fafc;
-    }
-    
-    .card-subtitle {
-      font-size: 0.875rem;
-      color: #64748b;
-      margin-top: 0.5rem;
-    }
-    
-    .agents-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 1rem;
-      margin-bottom: 2rem;
-    }
-    
-    .agent-card {
-      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-      border-radius: 12px;
-      padding: 1.5rem;
-      border: 1px solid #334155;
-      transition: all 0.3s;
       cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
     }
-    
-    .agent-card:hover {
-      border-color: #60a5fa;
-      box-shadow: 0 0 20px rgba(96, 165, 250, 0.2);
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--gradient-primary);
+      opacity: 0;
+      transition: opacity 0.3s;
     }
-    
-    .agent-header {
+
+    .stat-card:hover::before {
+      opacity: 1;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--accent-blue);
+    }
+
+    .stat-header {
       display: flex;
-      align-items: center;
-      gap: 1rem;
+      justify-content: space-between;
+      align-items: flex-start;
       margin-bottom: 1rem;
     }
-    
-    .agent-emoji {
-      font-size: 2rem;
+
+    .stat-icon {
       width: 48px;
       height: 48px;
+      border-radius: var(--radius-md);
       display: flex;
       align-items: center;
       justify-content: center;
-      background: #334155;
-      border-radius: 12px;
+      font-size: 1.25rem;
     }
-    
-    .agent-info h3 {
-      font-size: 1.125rem;
-      color: #f8fafc;
+
+    .stat-icon.blue { background: rgba(59, 130, 246, 0.1); color: var(--accent-blue); }
+    .stat-icon.purple { background: rgba(139, 92, 246, 0.1); color: var(--accent-purple); }
+    .stat-icon.green { background: rgba(16, 185, 129, 0.1); color: var(--accent-green); }
+    .stat-icon.yellow { background: rgba(245, 158, 11, 0.1); color: var(--accent-yellow); }
+    .stat-icon.cyan { background: rgba(6, 182, 212, 0.1); color: var(--accent-cyan); }
+    .stat-icon.red { background: rgba(239, 68, 68, 0.1); color: var(--accent-red); }
+
+    .stat-arrow {
+      color: var(--text-muted);
+      transition: transform 0.3s;
+    }
+
+    .stat-card.expanded .stat-arrow {
+      transform: rotate(180deg);
+    }
+
+    .stat-value {
+      font-size: 2.5rem;
+      font-weight: 700;
       margin-bottom: 0.25rem;
     }
-    
-    .agent-info p {
-      font-size: 0.875rem;
-      color: #64748b;
+
+    .stat-label {
+      font-size: 0.9375rem;
+      color: var(--text-secondary);
     }
-    
-    .agent-sessions {
-      margin-top: 1rem;
-      padding-top: 1rem;
-      border-top: 1px solid #334155;
-    }
-    
-    .session-item {
-      display: flex;
-      justify-content: space-between;
+
+    .stat-change {
+      display: inline-flex;
       align-items: center;
-      padding: 0.5rem 0;
+      gap: 0.25rem;
+      font-size: 0.8125rem;
+      margin-top: 0.75rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+    }
+
+    .stat-change.positive { background: rgba(16, 185, 129, 0.1); color: var(--accent-green); }
+    .stat-change.negative { background: rgba(239, 68, 68, 0.1); color: var(--accent-red); }
+
+    /* Expandable Content */
+    .stat-details {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease, padding 0.3s ease;
+      border-top: 1px solid transparent;
+    }
+
+    .stat-card.expanded .stat-details {
+      max-height: 500px;
+      padding-top: 1rem;
+      margin-top: 1rem;
+      border-top-color: var(--border-color);
+    }
+
+    .detail-list {
+      list-style: none;
+    }
+
+    .detail-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .detail-item:last-child {
+      border-bottom: none;
+    }
+
+    .detail-info {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .detail-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-sm);
+      background: var(--bg-hover);
+      display: flex;
+      align-items: center;
+      justify-content: center;
       font-size: 0.875rem;
     }
-    
-    .session-status {
-      padding: 0.25rem 0.5rem;
+
+    .detail-name {
+      font-weight: 500;
+    }
+
+    .detail-meta {
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+    }
+
+    .detail-status {
+      padding: 0.25rem 0.75rem;
       border-radius: 4px;
       font-size: 0.75rem;
       font-weight: 500;
     }
-    
-    .session-active {
-      background: rgba(34, 197, 94, 0.2);
-      color: #4ade80;
+
+    .status-active { background: rgba(16, 185, 129, 0.1); color: var(--accent-green); }
+    .status-idle { background: rgba(245, 158, 11, 0.1); color: var(--accent-yellow); }
+    .status-offline { background: rgba(239, 68, 68, 0.1); color: var(--accent-red); }
+
+    /* Charts Section */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+      margin-bottom: 2rem;
     }
-    
-    .session-idle {
-      background: rgba(234, 179, 8, 0.2);
-      color: #facc15;
-    }
-    
-    .logs-container {
-      background: #0f172a;
-      border-radius: 12px;
+
+    .chart-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
       padding: 1.5rem;
-      border: 1px solid #334155;
-      max-height: 400px;
-      overflow-y: auto;
     }
-    
-    .log-entry {
-      font-family: 'Monaco', 'Menlo', monospace;
-      font-size: 0.8125rem;
-      padding: 0.5rem 0;
-      border-bottom: 1px solid #1e293b;
+
+    .chart-header {
       display: flex;
-      gap: 1rem;
-    }
-    
-    .log-time {
-      color: #64748b;
-      flex-shrink: 0;
-    }
-    
-    .log-message {
-      color: #cbd5e1;
-    }
-    
-    .refresh-indicator {
-      display: inline-flex;
+      justify-content: space-between;
       align-items: center;
-      gap: 0.5rem;
-      font-size: 0.75rem;
-      color: #64748b;
+      margin-bottom: 1.5rem;
     }
-    
-    .spinner {
-      width: 12px;
-      height: 12px;
-      border: 2px solid #334155;
-      border-top-color: #60a5fa;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-    
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-    
-    .error-message {
-      background: rgba(239, 68, 68, 0.1);
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      color: #f87171;
-      padding: 1rem;
-      border-radius: 8px;
-      margin: 1rem 0;
-    }
-    
-    .section-title {
-      font-size: 1.25rem;
+
+    .chart-title {
+      font-size: 1rem;
       font-weight: 600;
-      margin-bottom: 1rem;
-      color: #f8fafc;
+    }
+
+    .chart-period {
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      padding: 0.375rem 0.75rem;
+      background: var(--bg-hover);
+      border-radius: var(--radius-sm);
+    }
+
+    .usage-bars {
       display: flex;
-      align-items: center;
-      gap: 0.5rem;
+      flex-direction: column;
+      gap: 1rem;
     }
-    
-    .usage-chart {
-      background: #1e293b;
-      border-radius: 12px;
-      padding: 1.5rem;
-      border: 1px solid #334155;
-    }
-    
-    .chart-bar {
+
+    .usage-item {
       display: flex;
       align-items: center;
       gap: 1rem;
-      margin: 0.5rem 0;
     }
-    
-    .chart-label {
-      width: 80px;
-      font-size: 0.875rem;
-      color: #94a3b8;
+
+    .usage-date {
+      width: 50px;
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      text-align: right;
     }
-    
-    .chart-track {
+
+    .usage-bar-container {
       flex: 1;
-      height: 24px;
-      background: #0f172a;
-      border-radius: 4px;
+      height: 32px;
+      background: var(--bg-hover);
+      border-radius: var(--radius-sm);
       overflow: hidden;
+      position: relative;
     }
-    
-    .chart-fill {
+
+    .usage-bar {
       height: 100%;
-      background: linear-gradient(90deg, #60a5fa 0%, #a78bfa 100%);
-      border-radius: 4px;
+      border-radius: var(--radius-sm);
       transition: width 0.5s ease;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 0.75rem;
+      font-size: 0.75rem;
+      font-weight: 600;
     }
-    
-    .chart-value {
-      width: 60px;
+
+    .usage-bar.input { background: var(--accent-blue); }
+    .usage-bar.output { background: var(--accent-purple); }
+
+    .usage-total {
+      width: 70px;
       text-align: right;
       font-size: 0.875rem;
-      color: #f8fafc;
+      font-weight: 600;
     }
-    
+
+    /* Logs Section */
+    .logs-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+
+    .logs-header {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logs-title {
+      font-size: 1rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .logs-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .logs-btn {
+      padding: 0.5rem 1rem;
+      background: var(--bg-hover);
+      border: none;
+      color: var(--text-secondary);
+      border-radius: var(--radius-sm);
+      font-size: 0.8125rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .logs-btn:hover {
+      background: var(--border-color);
+      color: var(--text-primary);
+    }
+
+    .logs-container {
+      max-height: 400px;
+      overflow-y: auto;
+      padding: 1rem;
+    }
+
+    .log-entry {
+      display: flex;
+      gap: 1rem;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid var(--border-color);
+      font-family: 'Monaco', 'Menlo', monospace;
+      font-size: 0.8125rem;
+    }
+
+    .log-entry:last-child {
+      border-bottom: none;
+    }
+
+    .log-time {
+      color: var(--text-muted);
+      flex-shrink: 0;
+      width: 80px;
+    }
+
+    .log-level {
+      padding: 0.125rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      flex-shrink: 0;
+    }
+
+    .log-level.info { background: rgba(59, 130, 246, 0.1); color: var(--accent-blue); }
+    .log-level.warn { background: rgba(245, 158, 11, 0.1); color: var(--accent-yellow); }
+    .log-level.error { background: rgba(239, 68, 68, 0.1); color: var(--accent-red); }
+    .log-level.success { background: rgba(16, 185, 129, 0.1); color: var(--accent-green); }
+
+    .log-message {
+      color: var(--text-secondary);
+      flex: 1;
+    }
+
+    /* Loading State */
+    .loading-skeleton {
+      background: linear-gradient(90deg, var(--bg-hover) 25%, var(--bg-card) 50%, var(--bg-hover) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: var(--radius-sm);
+    }
+
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+      color: var(--text-muted);
+    }
+
+    .empty-state i {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+    }
+
+    /* Responsive */
+    @media (max-width: 1200px) {
+      .scrum-board {
+        grid-template-columns: 1fr;
+      }
+      
+      .charts-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
     @media (max-width: 768px) {
+      .header {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+      }
+      
       .container {
         padding: 1rem;
       }
       
-      .header {
-        padding: 1rem;
+      .stats-grid {
+        grid-template-columns: 1fr;
       }
       
-      .card-value {
-        font-size: 2rem;
+      .tab-nav {
+        overflow-x: auto;
+        padding: 0.75rem 1rem;
+      }
+      
+      .tab-btn {
+        white-space: nowrap;
       }
     }
   </style>
 </head>
 <body>
-  <div class="header">
-    <h1>🦊 OpenClaw Agents Dashboard</h1>
-    <div id="connectionStatus">
-      <span class="refresh-indicator">
-        <span class="spinner"></span>
-        Connecting...
-      </span>
+  <!-- Header -->
+  <header class="header">
+    <div class="logo">
+      <div class="logo-icon">🎯</div>
+      <div>
+        <h1>Agents in a Mission</h1>
+        <p>Intelligent Agent Management Dashboard</p>
+      </div>
     </div>
-  </div>
-  
+    
+    <div class="header-actions">
+      <div class="connection-status" id="connectionStatus">
+        <span class="status-dot status-offline"></span>
+        <span>Connecting...</span>
+      </div>
+      
+      <button class="refresh-btn" id="refreshBtn" onclick="refreshAllData()">
+        <i class="fas fa-sync-alt"></i>
+        <span>Refresh</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Tab Navigation -->
+  <nav class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab('scrum')" data-tab="scrum">
+      <i class="fas fa-columns"></i>
+      <span>Mission Board</span>
+    </button>
+    <button class="tab-btn" onclick="switchTab('stats')" data-tab="stats">
+      <i class="fas fa-chart-line"></i>
+      <span>Statistics</span>
+    </button>
+  </nav>
+
+  <!-- Main Container -->
   <div class="container">
-    <div id="errorContainer"></div>
     
-    <!-- Stats Grid -->
-    <div class="grid">
-      <div class="card">
-        <div class="card-header">
-          <span>🤖</span>
-          <span>Active Agents</span>
+    <!-- Scrum Board Tab -->
+    <div id="scrumTab" class="tab-content active">
+      <div class="scrum-board">
+        <!-- TODO Column -->
+        <div class="scrum-column">
+          <div class="scrum-header todo">
+            <h3><i class="fas fa-circle"></i> TODO</h3>
+            <span class="task-count" id="todoCount">0</span>
+          </div>
+          <div class="scrum-tasks" id="todoTasks">
+            <div class="empty-state">
+              <i class="fas fa-clipboard-list"></i>
+              <p>No pending tasks</p>
+            </div>
+          </div>
         </div>
-        <div class="card-value" id="agentCount">-</div>
-        <div class="card-subtitle">Configured agents</div>
-      </div>
-      
-      <div class="card">
-        <div class="card-header">
-          <span>💬</span>
-          <span>Active Sessions</span>
+
+        <!-- In Progress Column -->
+        <div class="scrum-column">
+          <div class="scrum-header inprogress">
+            <h3><i class="fas fa-spinner"></i> In Progress</h3>
+            <span class="task-count" id="inProgressCount">0</span>
+          </div>
+          <div class="scrum-tasks" id="inProgressTasks">
+            <div class="empty-state">
+              <i class="fas fa-rocket"></i>
+              <p>No active tasks</p>
+            </div>
+          </div>
         </div>
-        <div class="card-value" id="sessionCount">-</div>
-        <div class="card-subtitle">Current conversations</div>
-      </div>
-      
-      <div class="card">
-        <div class="card-header">
-          <span>🛠️</span>
-          <span>Skills Loaded</span>
+
+        <!-- Done Column -->
+        <div class="scrum-column">
+          <div class="scrum-header done">
+            <h3><i class="fas fa-check-circle"></i> Done</h3>
+            <span class="task-count" id="doneCount">0</span>
+          </div>
+          <div class="scrum-tasks" id="doneTasks">
+            <div class="empty-state">
+              <i class="fas fa-trophy"></i>
+              <p>No completed tasks</p>
+            </div>
+          </div>
         </div>
-        <div class="card-value" id="skillCount">-</div>
-        <div class="card-subtitle">Available capabilities</div>
-      </div>
-      
-      <div class="card">
-        <div class="card-header">
-          <span>⏱️</span>
-          <span>Gateway Uptime</span>
-        </div>
-        <div class="card-value" id="uptime">-</div>
-        <div class="card-subtitle">Since last restart</div>
       </div>
     </div>
-    
-    <!-- Agents Section -->
-    <h2 class="section-title">
-      <span>🤖</span>
-      Agents
-    </h2>
-    <div class="agents-grid" id="agentsContainer">
-      <div class="card">Loading agents...</div>
-    </div>
-    
-    <!-- Usage Section -->
-    <h2 class="section-title">
-      <span>📊</span>
-      Token Usage (Last 7 Days)
-    </h2>
-    <div class="usage-chart" id="usageContainer">
-      <p style="color: #64748b;">Loading usage data...</p>
-    </div>
-    
-    <!-- Logs Section -->
-    <h2 class="section-title" style="margin-top: 2rem;">
-      <span>📝</span>
-      Recent Logs
-    </h2>
-    <div class="logs-container" id="logsContainer">
-      <p style="color: #64748b;">Loading logs...</p>
+
+    <!-- Statistics Tab -->
+    <div id="statsTab" class="tab-content">
+      
+      <!-- Stats Grid -->
+      <div class="stats-grid">
+        
+        <!-- Active Agents -->
+        <div class="stat-card" onclick="toggleCard(this)">
+          <div class="stat-header">
+            <div class="stat-icon blue">
+              <i class="fas fa-robot"></i>
+            </div>
+            <i class="fas fa-chevron-down stat-arrow"></i>
+          </div>
+          <div class="stat-value" id="agentCount">-</div>
+          <div class="stat-label">Active Agents</div>
+          <div class="stat-change positive">
+            <i class="fas fa-arrow-up"></i>
+            <span>All systems operational</span>
+          </div>
+          
+          <div class="stat-details">
+            <ul class="detail-list" id="agentList">
+              <li class="detail-item">
+                <span class="detail-meta">Loading agents...</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Active Sessions -->
+        <div class="stat-card" onclick="toggleCard(this)">
+          <div class="stat-header">
+            <div class="stat-icon purple">
+              <i class="fas fa-comments"></i>
+            </div>
+            <i class="fas fa-chevron-down stat-arrow"></i>
+          </div>
+          <div class="stat-value" id="sessionCount">-</div>
+          <div class="stat-label">Active Sessions</div>
+          <div class="stat-change positive" id="sessionChange">
+            <i class="fas fa-arrow-up"></i>
+            <span>Live conversations</span>
+          </div>
+          
+          <div class="stat-details">
+            <ul class="detail-list" id="sessionList">
+              <li class="detail-item">
+                <span class="detail-meta">Loading sessions...</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Skills Loaded -->
+        <div class="stat-card" onclick="toggleCard(this)">
+          <div class="stat-header">
+            <div class="stat-icon green">
+              <i class="fas fa-puzzle-piece"></i>
+            </div>
+            <i class="fas fa-chevron-down stat-arrow"></i>
+          </div>
+          <div class="stat-value" id="skillCount">-</div>
+          <div class="stat-label">Skills Loaded</div>
+          <div class="stat-change positive">
+            <i class="fas fa-check"></i>
+            <span>Ready to use</span>
+          </div>
+          
+          <div class="stat-details">
+            <ul class="detail-list" id="skillList">
+              <li class="detail-item">
+                <span class="detail-meta">Loading skills...</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Gateway Uptime -->
+        <div class="stat-card" onclick="toggleCard(this)">
+          <div class="stat-header">
+            <div class="stat-icon yellow">
+              <i class="fas fa-clock"></i>
+            </div>
+            <i class="fas fa-chevron-down stat-arrow"></i>
+          </div>
+          <div class="stat-value" id="uptime">-</div>
+          <div class="stat-label">Gateway Uptime</div>
+          <div class="stat-change positive" id="uptimeChange">
+            <i class="fas fa-check-circle"></i>
+            <span>Since last restart</span>
+          </div>
+          
+          <div class="stat-details">
+            <ul class="detail-list">
+              <li class="detail-item">
+                <div class="detail-info">
+                  <div class="detail-icon"><i class="fas fa-server"></i></div>
+                  <div>
+                    <div class="detail-name">Gateway Status</div>
+                    <div class="detail-meta" id="gatewayStatusDetail">Checking...</div>
+                  </div>
+                </div>
+                <span class="detail-status status-active">Active</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Memory Usage -->
+        <div class="stat-card" onclick="toggleCard(this)">
+          <div class="stat-header">
+            <div class="stat-icon cyan">
+              <i class="fas fa-memory"></i>
+            </div>
+            <i class="fas fa-chevron-down stat-arrow"></i>
+          </div>
+          <div class="stat-value" id="memoryCount">-</div>
+          <div class="stat-label">Memory Entries</div>
+          <div class="stat-change positive">
+            <i class="fas fa-brain"></i>
+            <span>Indexed memories</span>
+          </div>
+          
+          <div class="stat-details">
+            <ul class="detail-list" id="memoryList">
+              <li class="detail-item">
+                <span class="detail-meta">Loading memory data...</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Total Cost -->
+        <div class="stat-card" onclick="toggleCard(this)">
+          <div class="stat-header">
+            <div class="stat-icon red">
+              <i class="fas fa-dollar-sign"></i>
+            </div>
+            <i class="fas fa-chevron-down stat-arrow"></i>
+          </div>
+          <div class="stat-value" id="totalCost">$-</div>
+          <div class="stat-label">Total Cost (7 days)</div>
+          <div class="stat-change" id="costChange">
+            <i class="fas fa-chart-bar"></i>
+            <span>Token usage cost</span>
+          </div>
+          
+          <div class="stat-details">
+            <ul class="detail-list" id="costBreakdown">
+              <li class="detail-item">
+                <span class="detail-meta">Loading cost data...</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts Section -->
+      <div class="charts-grid">
+        <div class="chart-card">
+          <div class="chart-header">
+            <div class="chart-title"><i class="fas fa-chart-bar"></i> Token Usage (7 Days)</div>
+            <span class="chart-period">Last 7 days</span>
+          </div>
+          <div class="usage-bars" id="usageChart">
+            <div class="empty-state">
+              <i class="fas fa-spinner fa-spin"></i>
+              <p>Loading usage data...</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-header">
+            <div class="chart-title"><i class="fas fa-chart-pie"></i> Session Distribution</div>
+            <span class="chart-period">Current</span>
+          </div>
+          <div id="sessionChart">
+            <div class="empty-state">
+              <i class="fas fa-spinner fa-spin"></i>
+              <p>Loading session data...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Logs Section -->
+      <div class="logs-card">
+        <div class="logs-header">
+          <div class="logs-title">
+            <i class="fas fa-terminal"></i>
+            Recent Logs
+          </div>
+          <div class="logs-actions">
+            <button class="logs-btn" onclick="clearLogs()">
+              <i class="fas fa-trash"></i> Clear
+            </button>
+            <button class="logs-btn" onclick="exportLogs()">
+              <i class="fas fa-download"></i> Export
+            </button>
+          </div>
+        </div>
+        <div class="logs-container" id="logsContainer">
+          <div class="empty-state">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Loading logs...</p>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
-  
+
   <script>
     const API_BASE = '/agents-dashboard/api';
     let refreshInterval;
-    let isConnected = false;
-    
+    let currentData = {};
+
+    // Tab switching
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.tab === tabName) btn.classList.add('active');
+      });
+      
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
+      });
+      
+      document.getElementById(tabName + 'Tab').classList.add('active');
+    }
+
+    // Toggle stat card expansion
+    function toggleCard(card) {
+      card.classList.toggle('expanded');
+    }
+
     // Format uptime
     function formatUptime(seconds) {
       if (!seconds || seconds < 0) return 'N/A';
@@ -431,226 +1091,362 @@
       if (hours > 0) return `${hours}h ${mins}m`;
       return `${mins}m`;
     }
-    
-    // Format timestamp
+
+    // Format time
     function formatTime(isoString) {
       if (!isoString) return 'N/A';
       const date = new Date(isoString);
-      return date.toLocaleTimeString();
+      return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     }
-    
-    // Show error
-    function showError(message) {
-      const container = document.getElementById('errorContainer');
-      container.innerHTML = `<div class="error-message">${message}</div>`;
-      setTimeout(() => container.innerHTML = '', 5000);
-    }
-    
+
     // Update connection status
     function updateStatus(connected) {
-      isConnected = connected;
       const statusEl = document.getElementById('connectionStatus');
       if (connected) {
         statusEl.innerHTML = `
-          <span class="status-badge status-online">
-            <span class="status-dot"></span>
-            Live
-          </span>
+          <span class="status-dot status-online"></span>
+          <span>Connected</span>
         `;
       } else {
         statusEl.innerHTML = `
-          <span class="status-badge status-offline">
-            <span class="status-dot"></span>
-            Offline
-          </span>
+          <span class="status-dot status-offline"></span>
+          <span>Disconnected</span>
         `;
       }
     }
-    
-    // Fetch status
-    async function fetchStatus() {
-      try {
-        const response = await fetch(`${API_BASE}/status`);
-        if (!response.ok) throw new Error('Failed to fetch status');
-        const data = await response.json();
-        
-        updateStatus(data.gatewayRunning);
-        
-        // Update stats
-        document.getElementById('agentCount').textContent = data.agents?.length || 0;
-        document.getElementById('sessionCount').textContent = data.sessions?.total || 0;
-        document.getElementById('uptime').textContent = formatUptime(data.uptime);
-        
-        // Update agents
-        updateAgents(data.agents, data.sessions?.active);
-        
-        return data;
-      } catch (error) {
-        console.error('Status fetch error:', error);
-        updateStatus(false);
-        showError('Failed to connect to gateway');
-        return null;
-      }
-    }
-    
-    // Update agents display
-    function updateAgents(agents, sessions) {
-      const container = document.getElementById('agentsContainer');
+
+    // Generate mock tasks for Scrum board (replace with real data when available)
+    function generateMockTasks(agents, sessions) {
+      const tasks = [];
       
-      if (!agents || agents.length === 0) {
-        container.innerHTML = '<div class="card">No agents configured</div>';
+      if (agents && agents.length > 0) {
+        agents.forEach((agent, idx) => {
+          // TODO tasks
+          if (idx % 3 === 0) {
+            tasks.push({
+              id: `TASK-${1000 + idx}`,
+              title: `Review ${agent.name} configuration`,
+              status: 'todo',
+              priority: 'medium',
+              agent: agent,
+              time: '2 hours ago'
+            });
+          }
+          
+          // In Progress tasks
+          if (idx % 2 === 0) {
+            tasks.push({
+              id: `TASK-${2000 + idx}`,
+              title: `Process incoming messages for ${agent.name}`,
+              status: 'inprogress',
+              priority: 'high',
+              agent: agent,
+              time: '15 min ago'
+            });
+          }
+          
+          // Done tasks
+          tasks.push({
+            id: `TASK-${3000 + idx}`,
+            title: `${agent.name} initialized successfully`,
+            status: 'done',
+            priority: 'low',
+            agent: agent,
+            time: '1 hour ago'
+          });
+        });
+      }
+      
+      // Add session-based tasks
+      if (sessions && sessions.active) {
+        sessions.active.forEach((session, idx) => {
+          if (idx < 3) {
+            tasks.push({
+              id: `SESS-${session.id?.slice(0, 8) || idx}`,
+              title: `Active conversation ${session.id?.slice(0, 8)}...`,
+              status: 'inprogress',
+              priority: 'high',
+              agent: { name: session.agent || 'Unknown', emoji: '💬' },
+              time: 'Just now'
+            });
+          }
+        });
+      }
+      
+      return tasks;
+    }
+
+    // Render Scrum board
+    function renderScrumBoard(tasks) {
+      const todoTasks = tasks.filter(t => t.status === 'todo');
+      const inProgressTasks = tasks.filter(t => t.status === 'inprogress');
+      const doneTasks = tasks.filter(t => t.status === 'done');
+      
+      document.getElementById('todoCount').textContent = todoTasks.length;
+      document.getElementById('inProgressCount').textContent = inProgressTasks.length;
+      document.getElementById('doneCount').textContent = doneTasks.length;
+      
+      renderTaskColumn('todoTasks', todoTasks);
+      renderTaskColumn('inProgressTasks', inProgressTasks);
+      renderTaskColumn('doneTasks', doneTasks);
+    }
+
+    function renderTaskColumn(elementId, tasks) {
+      const container = document.getElementById(elementId);
+      
+      if (tasks.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-inbox"></i>
+            <p>No tasks</p>
+          </div>
+        `;
         return;
       }
       
-      container.innerHTML = agents.map(agent => {
-        const agentSessions = sessions?.filter(s => s.agent === agent.id || s.agentId === agent.id) || [];
+      container.innerHTML = tasks.map(task => `
+        <div class="task-card">
+          <div class="task-header">
+            <span class="task-id">${task.id}</span>
+            <span class="task-priority priority-${task.priority}">${task.priority}</span>
+          </div>
+          <div class="task-title">${task.title}</div>
+          <div class="task-meta">
+            <div class="task-agent">
+              <div class="agent-avatar">${task.agent?.emoji || '🤖'}</div>
+              <span>${task.agent?.name || 'Unknown'}</span>
+            </div>
+            <div class="task-time">
+              <i class="fas fa-clock"></i>
+              <span>${task.time}</span>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Fetch all data
+    async function fetchAllData() {
+      const refreshBtn = document.getElementById('refreshBtn');
+      refreshBtn.classList.add('spinning');
+      
+      try {
+        const [statusRes, statsRes, usageRes, logsRes] = await Promise.all([
+          fetch(`${API_BASE}/status`),
+          fetch(`${API_BASE}/stats`),
+          fetch(`${API_BASE}/usage`),
+          fetch(`${API_BASE}/logs`)
+        ]);
         
-        return `
-          <div class="agent-card" onclick="showAgentDetails('${agent.id}')">
-            <div class="agent-header">
-              <div class="agent-emoji">${agent.emoji || '🤖'}</div>
-              <div class="agent-info">
-                <h3>${agent.name || agent.id}</h3>
-                <p>${agent.model || 'Default model'}</p>
+        const status = statusRes.ok ? await statusRes.json() : null;
+        const stats = statsRes.ok ? await statsRes.json() : null;
+        const usage = usageRes.ok ? await usageRes.json() : null;
+        const logs = logsRes.ok ? await logsRes.json() : null;
+        
+        currentData = { status, stats, usage, logs };
+        
+        updateStatus(status?.gatewayRunning || false);
+        updateStats(status, stats);
+        updateUsageChart(usage);
+        updateLogs(logs);
+        
+        // Generate and render Scrum board
+        const tasks = generateMockTasks(status?.agents, status?.sessions);
+        renderScrumBoard(tasks);
+        
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        updateStatus(false);
+      } finally {
+        refreshBtn.classList.remove('spinning');
+      }
+    }
+
+    // Update statistics
+    function updateStats(status, stats) {
+      if (!status) return;
+      
+      // Update counts
+      document.getElementById('agentCount').textContent = status.agents?.length || 0;
+      document.getElementById('sessionCount').textContent = status.sessions?.total || 0;
+      document.getElementById('skillCount').textContent = stats?.skills || 0;
+      document.getElementById('uptime').textContent = formatUptime(status.uptime);
+      document.getElementById('memoryCount').textContent = '-';
+      
+      // Update agent list
+      const agentList = document.getElementById('agentList');
+      if (status.agents?.length > 0) {
+        agentList.innerHTML = status.agents.map(agent => `
+          <li class="detail-item">
+            <div class="detail-info">
+              <div class="detail-icon">${agent.emoji || '🤖'}</div>
+              <div>
+                <div class="detail-name">${agent.name || agent.id}</div>
+                <div class="detail-meta">${agent.model || 'Default model'}</div>
               </div>
             </div>
-            ${agentSessions.length > 0 ? `
-              <div class="agent-sessions">
-                ${agentSessions.slice(0, 3).map(s => `
-                  <div class="session-item">
-                    <span>${s.id?.slice(0, 8) || 'Unknown'}...</span>
-                    <span class="session-status ${s.status === 'active' ? 'session-active' : 'session-idle'}">
-                      ${s.status || 'idle'}
-                    </span>
-                  </div>
-                `).join('')}
-                ${agentSessions.length > 3 ? `<div style="color: #64748b; font-size: 0.75rem; margin-top: 0.5rem;">+${agentSessions.length - 3} more</div>` : ''}
+            <span class="detail-status status-active">Active</span>
+          </li>
+        `).join('');
+      }
+      
+      // Update session list
+      const sessionList = document.getElementById('sessionList');
+      if (status.sessions?.active?.length > 0) {
+        sessionList.innerHTML = status.sessions.active.slice(0, 5).map(session => `
+          <li class="detail-item">
+            <div class="detail-info">
+              <div class="detail-icon">💬</div>
+              <div>
+                <div class="detail-name">Session ${session.id?.slice(0, 12)}...</div>
+                <div class="detail-meta">Agent: ${session.agent || 'Unknown'}</div>
               </div>
-            ` : '<div class="agent-sessions" style="color: #64748b; font-size: 0.875rem;">No active sessions</div>'}
+            </div>
+            <span class="detail-status ${session.status === 'active' ? 'status-active' : 'status-idle'}">
+              ${session.status || 'idle'}
+            </span>
+          </li>
+        `).join('');
+      } else {
+        sessionList.innerHTML = '<li class="detail-item"><span class="detail-meta">No active sessions</span></li>';
+      }
+      
+      // Update gateway status detail
+      document.getElementById('gatewayStatusDetail').textContent = 
+        status.gatewayRunning ? 'Running normally' : 'Not running';
+    }
+
+    // Update usage chart
+    function updateUsageChart(usage) {
+      const container = document.getElementById('usageChart');
+      
+      if (!usage?.available || !usage.days?.length) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-chart-bar"></i>
+            <p>No usage data available</p>
+          </div>
+        `;
+        return;
+      }
+      
+      const maxTokens = Math.max(...usage.days.map(d => d.total || 0), 1);
+      let totalCost = 0;
+      
+      container.innerHTML = usage.days.slice(-7).map(day => {
+        totalCost += day.cost || 0;
+        const percentage = ((day.total || 0) / maxTokens) * 100;
+        return `
+          <div class="usage-item">
+            <div class="usage-date">${day.date.slice(5)}</div>
+            <div class="usage-bar-container">
+              <div class="usage-bar input" style="width: ${percentage}%">
+                ${percentage > 15 ? (day.total || 0).toLocaleString() : ''}
+              </div>
+            </div>
+            <div class="usage-total">${(day.total || 0).toLocaleString()}</div>
           </div>
         `;
       }).join('');
-    }
-    
-    // Fetch stats
-    async function fetchStats() {
-      try {
-        const response = await fetch(`${API_BASE}/stats`);
-        if (!response.ok) throw new Error('Failed to fetch stats');
-        const data = await response.json();
-        
-        document.getElementById('skillCount').textContent = data.skills || 0;
-      } catch (error) {
-        console.error('Stats fetch error:', error);
-      }
-    }
-    
-    // Fetch usage
-    async function fetchUsage() {
-      try {
-        const response = await fetch(`${API_BASE}/usage`);
-        if (!response.ok) throw new Error('Failed to fetch usage');
-        const data = await response.json();
-        
-        const container = document.getElementById('usageContainer');
-        
-        if (!data.available || !data.days || data.days.length === 0) {
-          container.innerHTML = '<p style="color: #64748b;">No usage data available</p>';
-          return;
-        }
-        
-        const maxTokens = Math.max(...data.days.map(d => d.total || 0), 1);
-        
-        container.innerHTML = data.days.slice(-7).map(day => {
-          const percentage = ((day.total || 0) / maxTokens) * 100;
-          return `
-            <div class="chart-bar">
-              <div class="chart-label">${day.date.slice(5)}</div>
-              <div class="chart-track">
-                <div class="chart-fill" style="width: ${percentage}%"></div>
-              </div>
-              <div class="chart-value">${(day.total || 0).toLocaleString()}</div>
+      
+      // Update total cost
+      document.getElementById('totalCost').textContent = `$${totalCost.toFixed(2)}`;
+      
+      // Update cost breakdown
+      const costBreakdown = document.getElementById('costBreakdown');
+      costBreakdown.innerHTML = `
+        <li class="detail-item">
+          <div class="detail-info">
+            <div class="detail-icon"><i class="fas fa-arrow-down"></i></div>
+            <div>
+              <div class="detail-name">Input Tokens</div>
             </div>
-          `;
-        }).join('');
-      } catch (error) {
-        console.error('Usage fetch error:', error);
-        document.getElementById('usageContainer').innerHTML = '<p style="color: #64748b;">Failed to load usage data</p>';
-      }
+          </div>
+          <span>${usage.days.reduce((a, b) => a + (b.input || 0), 0).toLocaleString()}</span>
+        </li>
+        <li class="detail-item">
+          <div class="detail-info">
+            <div class="detail-icon"><i class="fas fa-arrow-up"></i></div>
+            <div>
+              <div class="detail-name">Output Tokens</div>
+            </div>
+          </div>
+          <span>${usage.days.reduce((a, b) => a + (b.output || 0), 0).toLocaleString()}</span>
+        </li>
+      `;
     }
-    
-    // Fetch logs
-    async function fetchLogs() {
-      try {
-        const response = await fetch(`${API_BASE}/logs`);
-        if (!response.ok) throw new Error('Failed to fetch logs');
-        const data = await response.json();
-        
-        const container = document.getElementById('logsContainer');
-        
-        if (!data.logs || data.logs.length === 0) {
-          container.innerHTML = '<p style="color: #64748b;">No logs available</p>';
-          return;
-        }
-        
-        container.innerHTML = data.logs.map(log => `
+
+    // Update logs
+    function updateLogs(logs) {
+      const container = document.getElementById('logsContainer');
+      
+      if (!logs?.logs?.length) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-file-alt"></i>
+            <p>No logs available</p>
+          </div>
+        `;
+        return;
+      }
+      
+      container.innerHTML = logs.logs.map(log => {
+        const level = log.level || 'info';
+        return `
           <div class="log-entry">
             <span class="log-time">${formatTime(log.timestamp)}</span>
+            <span class="log-level ${level}">${level}</span>
             <span class="log-message">${log.message || log}</span>
           </div>
-        `).join('');
-        
-        // Auto-scroll to bottom
-        container.scrollTop = container.scrollHeight;
-      } catch (error) {
-        console.error('Logs fetch error:', error);
-        document.getElementById('logsContainer').innerHTML = '<p style="color: #64748b;">Failed to load logs</p>';
-      }
+        `;
+      }).join('');
+      
+      container.scrollTop = container.scrollHeight;
     }
-    
-    // Show agent details (placeholder for future expansion)
-    function showAgentDetails(agentId) {
-      console.log('Show details for agent:', agentId);
-      // Could fetch and show detailed agent info
+
+    // Clear logs
+    function clearLogs() {
+      document.getElementById('logsContainer').innerHTML = `
+        <div class="empty-state">
+          <i class="fas fa-check"></i>
+          <p>Logs cleared</p>
+        </div>
+      `;
     }
-    
+
+    // Export logs
+    function exportLogs() {
+      if (!currentData.logs?.logs?.length) return;
+      
+      const content = currentData.logs.logs.map(l => 
+        `[${l.timestamp}] [${l.level || 'INFO'}] ${l.message || l}`
+      ).join('\n');
+      
+      const blob = new Blob([content], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `openclaw-logs-${new Date().toISOString().split('T')[0]}.txt`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
     // Refresh all data
-    async function refreshData() {
-      await Promise.all([
-        fetchStatus(),
-        fetchStats(),
-        fetchUsage(),
-        fetchLogs()
-      ]);
+    function refreshAllData() {
+      fetchAllData();
     }
-    
+
     // Initialize
     async function init() {
-      await refreshData();
-      
-      // Set up auto-refresh every 60 seconds (1 minute)
-      refreshInterval = setInterval(refreshData, 60000);
-      
-      // Update refresh indicator
-      updateRefreshIndicator();
+      await fetchAllData();
+      refreshInterval = setInterval(fetchAllData, 60000);
     }
-    
-    // Update refresh indicator showing countdown
-    function updateRefreshIndicator() {
-      const indicator = document.querySelector('.refresh-indicator');
-      if (indicator) {
-        indicator.innerHTML = `
-          <span class="spinner"></span>
-          Auto-refresh: 60s
-        `;
-      }
-    }
-    
-    // Cleanup on page unload
+
+    // Cleanup
     window.addEventListener('beforeunload', () => {
       if (refreshInterval) clearInterval(refreshInterval);
     });
-    
+
     // Start
     init();
   </script>
