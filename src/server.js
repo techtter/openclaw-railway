@@ -1792,6 +1792,44 @@ app.get('/agents-dashboard/api/agents/:id', async (req, res) => {
   }
 });
 
+// Public config endpoint - returns sanitized config (no sensitive data)
+app.get('/agents-dashboard/api/config', async (req, res) => {
+  try {
+    const configFile = join(OPENCLAW_STATE_DIR, 'openclaw.json');
+    
+    if (!existsSync(configFile)) {
+      return res.json({ configured: false });
+    }
+    
+    const config = JSON.parse(readFileSync(configFile, 'utf-8'));
+    
+    // Return only non-sensitive data
+    res.json({
+      configured: true,
+      agents: {
+        list: config.agents?.list?.map(a => ({
+          id: a.id,
+          name: a.name,
+          emoji: a.identity?.emoji,
+          model: a.model
+        })) || [],
+        defaults: {
+          model: config.agents?.defaults?.model
+        }
+      },
+      skills: {
+        entries: config.skills?.entries || {}
+      },
+      channels: Object.keys(config.channels || {}),
+      meta: {
+        lastTouchedVersion: config.meta?.lastTouchedVersion
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Protect all /openclaw paths (SPA, assets, API) with setup password
 app.use('/openclaw', authMiddleware);
 
