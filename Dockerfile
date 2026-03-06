@@ -124,6 +124,9 @@ RUN chmod +x /entrypoint.sh
 # Copy pre-bundled skills (Railway-optimized)
 COPY skills/ /bundled-skills/
 
+# Copy agents-dashboard static files
+COPY agents-dashboard/ /app/agents-dashboard/
+
 # Create data directory with proper permissions
 RUN mkdir -p /data/.openclaw /data/workspace && \
     chmod 700 /data/.openclaw /data/workspace && \
