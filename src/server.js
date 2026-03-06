@@ -1513,6 +1513,285 @@ app.get('/api/schemas', authMiddleware, (req, res) => {
 // Create reverse proxy
 const { middleware: proxyMiddleware, upgradeHandler } = createProxy(getGatewayToken);
 
+// Serve agents-dashboard static files at /agents-dashboard/
+app.use('/agents-dashboard', express.static(join(process.cwd(), 'agents-dashboard')));
+
+// Redirect /agents-dashboard to /agents-dashboard/
+app.get('/agents-dashboard', (req, res) => {
+  res.redirect('/agents-dashboard/');
+});
+
+// ============================================
+// PUBLIC API ENDPOINTS FOR AGENTS DASHBOARD
+// ============================================
+
+// CORS headers for dashboard API
+app.use('/agents-dashboard/api', (req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  next();
+});
+
+// Public status endpoint - no authentication required
+app.get('/agents-dashboard/api/status', async (req, res) => {
+  try {
+    const configFile = join(OPENCLAW_STATE_DIR, 'openclaw.json');
+    const isConfigured = existsSync(configFile);
+    const gatewayRunning = isGatewayRunning();
+    
+    let model = null;
+    let channels = null;
+    let agents = [];
+    
+    if (isConfigured) {
+      try {
+        const config = JSON.parse(readFileSync(configFile, 'utf-8'));
+        model = config.agents?.defaults?.model?.primary || config.agents?.defaults?.model || null;
+        channels = config.channels || null;
+        agents = config.agents?.list || [];
+      } catch {
+        // ignore parse errors
+      }
+    }
+    
+    // Get session count via RPC if gateway is running
+    let sessionsCount = 0;
+    let activeSessions = [];
+    if (gatewayRunning) {
+      try {
+        const result = await gatewayRPC('sessions.list', { includeGlobal: true, limit: 100 });
+        if (Array.isArray(result)) {
+          sessionsCount = result.length;
+          activeSessions = result.slice(0, 10).map(s => ({
+            id: s.id || s.sessionId,
+            agent: s.agentId || s.agent,
+            status: s.status || 'unknown',
+            lastActivity: s.lastActivity || s.updatedAt
+          }));
+        } else if (Array.isArray(result?.sessions)) {
+          sessionsCount = result.sessions.length;
+          activeSessions = result.sessions.slice(0, 10).map(s => ({
+            id: s.id || s.sessionId,
+            agent: s.agentId || s.agent,
+            status: s.status || 'unknown',
+            lastActivity: s.lastActivity || s.updatedAt
+          }));
+        }
+      } catch {
+        // RPC failed, use CLI fallback
+        try {
+          const cliResult = await runCmd('sessions', ['--json']);
+          if (cliResult.code === 0) {
+            const parsed = JSON.parse(cliResult.stdout);
+            if (Array.isArray(parsed)) {
+              sessionsCount = parsed.length;
+              activeSessions = parsed.slice(0, 10);
+            } else if (parsed?.count != null) {
+              sessionsCount = parsed.count;
+            }
+          }
+        } catch { /* CLI not available */ }
+      }
+    }
+    
+    res.json({
+      timestamp: new Date().toISOString(),
+      configured: isConfigured,
+      gatewayRunning,
+      model,
+      channels: channels ? Object.keys(channels) : [],
+      agents: agents.map(a => ({
+        id: a.id,
+        name: a.name || a.id,
+        emoji: a.identity?.emoji || '🤖',
+        model: a.model || model
+      })),
+      sessions: {
+        total: sessionsCount,
+        active: activeSessions
+      },
+      uptime: getGatewayUptime()
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      error: 'Failed to get status', 
+      message: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Public stats endpoint
+app.get('/agents-dashboard/api/stats', async (req, res) => {
+  try {
+    let skillsCount = 0;
+    const configFile = join(OPENCLAW_STATE_DIR, 'openclaw.json');
+    if (existsSync(configFile)) {
+      try {
+        const config = JSON.parse(readFileSync(configFile, 'utf-8'));
+        const entries = config.skills?.entries;
+        skillsCount = entries ? Object.keys(entries).length : 0;
+      } catch { /* ignore */ }
+    }
+    
+    let sessionsCount = 0;
+    if (isGatewayRunning()) {
+      try {
+        const result = await gatewayRPC('sessions.list', { includeGlobal: true, limit: 100 });
+        if (Array.isArray(result)) {
+          sessionsCount = result.length;
+        } else if (result?.count != null) {
+          sessionsCount = result.count;
+        } else if (Array.isArray(result?.sessions)) {
+          sessionsCount = result.sessions.length;
+        }
+      } catch {
+        // RPC failed
+      }
+    }
+    
+    res.json({
+      timestamp: new Date().toISOString(),
+      skills: skillsCount,
+      sessions: sessionsCount,
+      gatewayRunning: isGatewayRunning(),
+      uptime: getGatewayUptime()
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Public logs endpoint (limited to last 50 lines)
+app.get('/agents-dashboard/api/logs', async (req, res) => {
+  try {
+    const logs = getRecentLogs(0);
+    // Return last 50 log entries
+    const recentLogs = logs.slice(-50);
+    res.json({
+      timestamp: new Date().toISOString(),
+      logs: recentLogs,
+      count: recentLogs.length
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Public usage endpoint
+app.get('/agents-dashboard/api/usage', async (req, res) => {
+  try {
+    const endDate = new Date().toISOString().split('T')[0];
+    const startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    
+    let rawDays = null;
+    let totals = null;
+    
+    // Try gateway RPC first
+    if (isGatewayRunning()) {
+      try {
+        const result = await gatewayRPC('usage.cost', { startDate, endDate });
+        if (Array.isArray(result)) {
+          rawDays = result;
+        } else if (Array.isArray(result?.daily)) {
+          rawDays = result.daily;
+          totals = result.totals || null;
+        }
+      } catch {
+        // RPC failed
+      }
+    }
+    
+    // CLI fallback
+    if (!rawDays) {
+      try {
+        const cliResult = await runCmd('usage', ['--json']);
+        if (cliResult.code === 0) {
+          const parsed = JSON.parse(cliResult.stdout);
+          if (Array.isArray(parsed)) {
+            rawDays = parsed;
+          } else if (Array.isArray(parsed?.daily)) {
+            rawDays = parsed.daily;
+            totals = parsed.totals || null;
+          }
+        }
+      } catch { /* CLI not available */ }
+    }
+    
+    if (!rawDays || rawDays.length === 0) {
+      return res.json({ available: false, days: [] });
+    }
+    
+    const days = rawDays.map(d => ({
+      date: d.date,
+      output: d.output || 0,
+      input: d.input || 0,
+      cacheWrite: d.cacheWrite || 0,
+      cacheRead: d.cacheRead || 0,
+      total: d.totalTokens || d.total || 0,
+      cost: d.totalCost || d.cost || 0
+    }));
+    
+    res.json({ available: true, days, totals });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Public agent details endpoint
+app.get('/agents-dashboard/api/agents/:id', async (req, res) => {
+  try {
+    const agentId = req.params.id;
+    const configFile = join(OPENCLAW_STATE_DIR, 'openclaw.json');
+    
+    if (!existsSync(configFile)) {
+      return res.status(404).json({ error: 'Not configured' });
+    }
+    
+    const config = JSON.parse(readFileSync(configFile, 'utf-8'));
+    const agent = config.agents?.list?.find(a => a.id === agentId);
+    
+    if (!agent) {
+      return res.status(404).json({ error: 'Agent not found' });
+    }
+    
+    // Get agent sessions
+    let sessions = [];
+    if (isGatewayRunning()) {
+      try {
+        const result = await gatewayRPC('sessions.list', { agentId, limit: 20 });
+        if (Array.isArray(result)) {
+          sessions = result;
+        } else if (Array.isArray(result?.sessions)) {
+          sessions = result.sessions;
+        }
+      } catch {
+        // RPC failed
+      }
+    }
+    
+    res.json({
+      id: agent.id,
+      name: agent.name || agent.id,
+      emoji: agent.identity?.emoji || '🤖',
+      model: agent.model || config.agents?.defaults?.model?.primary,
+      workspace: agent.workspace,
+      sessions: sessions.map(s => ({
+        id: s.id || s.sessionId,
+        status: s.status || 'unknown',
+        lastActivity: s.lastActivity || s.updatedAt,
+        messageCount: s.messageCount || 0
+      }))
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Protect all /openclaw paths (SPA, assets, API) with setup password
 app.use('/openclaw', authMiddleware);
 
